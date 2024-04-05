@@ -23,3 +23,28 @@ subnet_id       = module.vpc.public_subnets[0]
               sudo systemctl enable mongod
               EOF
 }
+
+resource "aws_security_group" "MongoDB_sg" {
+  name        = "MongoDB_sg"
+  description = "Allow inbound traffic on port 80 and all outbound traffic"
+  vpc_id      = module.vpc.vpc_id  # Replace this with your VPC ID if needed
+
+  ingress {
+    description      = "ssh"
+    from_port        = 22
+    to_port          = 22
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"] # Allows traffic from any IP address. Narrow this down as necessary for your use case.
+  }
+  egress {
+    description      = "All traffic"
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1" # Allows all traffic
+    cidr_blocks      = ["0.0.0.0/0"] # Allows traffic to any IP address
+  }
+
+  tags = {
+    Name = "mongoDB_sg"
+  }
+}
