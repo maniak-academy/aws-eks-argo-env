@@ -48,3 +48,7 @@ resource "aws_security_group" "MongoDB_sg" {
     Name = "mongoDB_sg"
   }
 }
+
+output "mongodb_instance_public_ip" {
+    value = aws_instance.mongodb_instance.public_ip
+}
