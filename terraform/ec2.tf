@@ -4,7 +4,7 @@ resource "aws_instance" "mongodb_instance" {
 subnet_id       = module.vpc.public_subnets[0]
   key_name        = "us-east-1key"
   associate_public_ip_address = true  # This line is added to associate a public IP
-  vpc_security_group_ids      = [aws_security_group.juiceshop_sg.id] # Attach the security group
+  vpc_security_group_ids      = [aws_security_group.MongoDB_sg.id] # Attach the security group
 
   tags = {
     Name = "MongoDBInstance"
