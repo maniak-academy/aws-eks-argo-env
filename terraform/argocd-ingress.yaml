@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/backend-protocol: HTTPS
+    alb.ingress.kubernetes.io/target-type: 'ip'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/inbound-cidrs: 0.0.0.0/0
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-2:616973157416:certificate/9e7e2ff8-6572-45d4-9b16-9714a0348746"
+    # Use this annotation (which must match a service name) to route traffic to HTTP2 backends.
+    alb.ingress.kubernetes.io/conditions.argogrpc: |
+      [{"field":"http-header","httpHeaderConfig":{"httpHeaderName": "Content-Type", "values":["application/grpc"]}}]
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+  name: argocd-ingress
+  namespace: argocd
+spec:
+  rules:
+    - host: argocd.maniak.academy
+      http:
+        paths:
+          - backend:
+              service:
+                name: argocd-server
+                port:
+                  number: 443
+            pathType: ImplementationSpecific

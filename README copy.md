@@ -17,3 +17,14 @@
 Environment Information
 
 1. Deploy in US-east-2
+
+
+https://www.cherryservers.com/blog/install-mongodb-ubuntu-22-04
+
+db.createUser(
+  {
+    user: "AdminCherry",
+    pwd: passwordPrompt(),
+    roles: [ { role: "userAdminAnyDatabase", db: "admin" }, "readWriteAnyDatabase" ]
+ }
+)

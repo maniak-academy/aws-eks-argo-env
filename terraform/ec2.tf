@@ -1,16 +1,15 @@
 resource "aws_instance" "mongodb_instance" {
   ami                         = "ami-080e1f13689e07408"
   instance_type               = "t2.micro"
-  subnet_id                   = module.vpc.public_subnets[0]
+  subnet_id                   = aws_subnet.public[0].id
   key_name                    = "us-east-1key"
-  associate_public_ip_address = true                               # This line is added to associate a public IP
-  vpc_security_group_ids      = [aws_security_group.MongoDB_sg.id] # Attach the security group
+  associate_public_ip_address = true
+  vpc_security_group_ids      = [aws_security_group.MongoDB_sg.id]
 
   tags = {
     Name = "MongoDBInstance"
   }
 
-  # User data script to install MongoDB
   user_data = <<-EOF
               #!/bin/bash
               sudo apt-get update -y
@@ -21,8 +20,18 @@ resource "aws_instance" "mongodb_instance" {
               sudo apt-get install -y mongodb-org
               sudo systemctl start mongod
               sudo systemctl enable mongod
+
+              # Configure MongoDB to enable authorization and set bind to 0.0.0.0
+              echo "security:
+    authorization: enabled" | sudo tee -a /etc/mongod.conf
+
+              echo "net:
+    bindIp: 0.0.0.0" | sudo tee -a /etc/mongod.conf
+
+              sudo systemctl restart mongod
               EOF
 }
+
 
 resource "aws_security_group" "MongoDB_sg" {
   name        = "MongoDB_sg"
