@@ -36,7 +36,7 @@ resource "aws_instance" "mongodb_instance" {
 resource "aws_security_group" "MongoDB_sg" {
   name        = "MongoDB_sg"
   description = "Allow inbound traffic on port 80 and all outbound traffic"
-  vpc_id      = module.vpc.vpc_id # Replace this with your VPC ID if needed
+  vpc_id      = aws_vpc.myvpc.id # Replace this with your VPC ID if needed
 
   ingress {
     description = "ssh"
