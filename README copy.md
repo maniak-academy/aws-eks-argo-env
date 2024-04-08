@@ -28,3 +28,17 @@ db.createUser(
     roles: [ { role: "userAdminAnyDatabase", db: "admin" }, "readWriteAnyDatabase" ]
  }
 )
+aws eks --region us-east-1 update-kubeconfig --name eks-maniak
+
+
+This repository creates a VPC with private and public subnets and nat gateway with connection to internet gateway.
+
+The EKS Version 1.29 is created on the created VPC , there is an option to switch between public and private(only within the vpc).
+
+The Additional Supporting components Cluster AutoScaler,AWS Loadbalancer Controller and External DNS are also created by the repo as helm charts.
+
+ArgoCD is created . there is an option to set the domain in the argocd.tf values this has to be set to the proper fqdn for argocd to function properly externally. additionally argocd needs an ingress to be defined to the same fqdn (host).
+
+The terraform cleanly creates and destroys. If destroy fails for some reason, you need to just rerun destroy because eks cluster times out on deletion. There is an argocd-ingress.yaml under terraform folder for creating the argocd ingress(loadbalancer). It should be integrated in github actions. the manifest argocd-ingress.yaml should be applied via kubectl apply -f argocd-ingress.yaml after doing "aws eks update-kubeconfig --name --name us-east-2 "just after the terraform apply. also you need to kubectl delete the ingress before doing the terraform destroy . these can be done in github actions ci/cd
+
+Get creds for argo cd kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d; echo
