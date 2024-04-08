@@ -16,7 +16,13 @@
 
 Environment Information
 
-1. Deploy in US-east-2
+1. Deploy in US-east-1 
+2. Apply argocd kubectl apply -f 
+3. kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d; echo
+4. change argo cd creds 
+4. argocd login <ARGOCD_SERVER> --username admin --password <PASSWORD>
+5. argocd account update-password
+
 
 
 https://www.cherryservers.com/blog/install-mongodb-ubuntu-22-04
