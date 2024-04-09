@@ -24,6 +24,37 @@ Environment Information
 5. argocd account update-password
 
 
+Using mongosh:
+
+switch to the admin database
+
+add the myUserAdmin user with the userAdminAnyDatabase and readWriteAnyDatabase roles":
+
+use admin
+db.createUser(
+  {
+    user: "smaniak",
+    pwd: "W3lcome098!",
+    roles: [
+      { role: "userAdminAnyDatabase", db: "admin" },
+      { role: "readWriteAnyDatabase", db: "admin" }
+    ]
+  }
+)
+
+
+db.auth("smaniak", "W3lcome098!")
+
+db.createUser({
+  user: "adminSmaniak",
+  pwd: "W3lcome098!",
+  roles: [{ role: "dbAdmin", db: "toDoApp" }]
+})
+
+mongo -u "adminSmaniak" -p "W3lcome098!" --authenticationDatabase "toDoApp"
+
+mongo -u admin -p W3lcome098! --authenticationDatabase admin
+
 
 https://www.cherryservers.com/blog/install-mongodb-ubuntu-22-04
 
