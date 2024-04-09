@@ -1,10 +1,15 @@
-resource "aws_ecr_repository" "my_repository" {
-  name                 = "sebby-simple-task-app" 
-  image_tag_mutability = "MUTABLE"
+resource "aws_ecrpublic_repository" "my_repository" {
 
-  image_scanning_configuration {
-    scan_on_push = true
+  repository_name = "sebby-simple-task-app"
+
+  catalog_data {
+    about_text        = "Sebbys Simple Task App"
+    description       = "Description"
+    operating_systems = ["Linux"]
+    usage_text        = "Usage Text"
   }
 
-
+  tags = {
+    env = "dev"
+  }
 }
