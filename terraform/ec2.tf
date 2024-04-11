@@ -41,7 +41,7 @@ resource "aws_security_group" "MongoDB_sg" {
     from_port   = 27017
     to_port     = 27017
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Allows traffic from any IP address. Narrow this down as necessary for your use case.
+    cidr_blocks = [var.vpc_cidr] # Allows traffic from any IP address. Narrow this down as necessary for your use case.
   }
   egress {
     description = "All traffic"
