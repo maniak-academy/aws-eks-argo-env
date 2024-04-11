@@ -23,6 +23,25 @@ resource "aws_instance" "mongodb_instance" {
               EOF
 }
 
+resource "aws_route53_zone" "internal_zone" {
+  name = "internal.maniak.academy"
+  vpc {
+    vpc_id     = aws_vpc.myvpc.id
+    vpc_region = "us-east-1"
+  }
+  tags = {
+    Name = "Internal Zone"
+  }
+}
+
+resource "aws_route53_record" "mongodb_record" {
+  zone_id = aws_route53_zone.internal_zone.zone_id
+  name    = "mongodb.internal.maniak.academy"
+  type    = "A"
+  ttl     = "300"
+
+  records = [aws_instance.mongodb_instance.private_ip]
+}
 
 resource "aws_security_group" "MongoDB_sg" {
   name        = "MongoDB_sg"
