@@ -1,3 +1,47 @@
+resource "aws_iam_instance_profile" "database_instance_profile" {
+  name = "database_instance_profile"
+  role = aws_iam_role.database_role.name
+}
+
+resource "aws_iam_role" "database_role" {
+  name = "database_role"
+  assume_role_policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Principal" : {
+          "Service" : "ec2.amazonaws.com"
+        },
+        "Action" : "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "ec2_full_access" {
+  name        = "EC2FullAccess"
+  description = "Grants full access to EC2 resources"
+  
+  policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": "ec2:*",
+        "Resource": "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_full_access_attachment" {
+  role       = aws_iam_role.database_role.name
+  policy_arn = aws_iam_policy.ec2_full_access.arn
+}
+
+
+
 resource "aws_instance" "mongodb_instance" {
   ami                         = "ami-080e1f13689e07408"
   instance_type               = "t2.micro"
@@ -5,6 +49,9 @@ resource "aws_instance" "mongodb_instance" {
   key_name                    = "us-east-1key"
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.MongoDB_sg.id]
+
+  iam_instance_profile        = aws_iam_instance_profile.database_instance_profile.name
+
 
   tags = {
     Name = "MongoDBInstance"
