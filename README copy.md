@@ -40,6 +40,9 @@ db.createUser({
 })
 
 
+mongodump --uri "mongodb://adminUser:adminPassword@localhost:27017" --out $backup_path/$date
+
+
 
 aws eks --region us-east-1 update-kubeconfig --name eks-maniak
 
