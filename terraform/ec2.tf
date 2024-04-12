@@ -69,7 +69,7 @@ resource "aws_instance" "mongodb_instance" {
               sudo systemctl enable mongod
               
               # Create admin user
-              mongo admin --eval "db.createUser({user: 'adminUser', pwd: 'adminPassword', roles: [{role: 'userAdminAnyDatabase', db: 'admin'}, 'readWriteAnyDatabase']})"
+              mongosh admin --eval "db.createUser({user: 'adminUser', pwd: 'adminPassword', roles: [{role: 'userAdminAnyDatabase', db: 'admin'}, 'readWriteAnyDatabase']})"
               
               # Wait for MongoDB to start
               sleep 10
