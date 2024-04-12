@@ -12,24 +12,9 @@ resource "aws_s3_bucket" "backup_bucket" {
   )
 }
 
-resource "aws_s3_bucket_policy" "backup_bucket_policy" {
+resource "aws_s3_bucket_versioning" "versioning_example" {
   bucket = aws_s3_bucket.backup_bucket.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect    = "Allow",
-        Principal = "*",
-        Action    = "s3:GetObject",
-        Resource  = "${aws_s3_bucket.backup_bucket.arn}/*"
-      },
-      {
-        Effect    = "Allow",
-        Principal = "*",
-        Action    = "s3:ListBucket",
-        Resource  = aws_s3_bucket.backup_bucket.arn
-      }
-    ]
-  })
+  versioning_configuration {
+    status = "Enabled"
+  }
 }
