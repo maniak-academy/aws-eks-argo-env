@@ -85,7 +85,7 @@ resource "aws_instance" "mongodb_instance" {
               aws configure set default.region us-east-1
 
               # Script for MongoDB backup
-              echo '*/30 * * * * root mongodump --uri "mongodb://localhost:27017" --out /var/backups/mongo/$(date +\%Y\%m\%d_\%H\%M\%S) && tar -czf /var/backups/mongo/backup_$(date +\%Y\%m\%d_\%H\%M\%S).tar.gz -C /var/backups/mongo/$(date +\%Y\%m\%d_\%H\%M\%S) . && aws s3 cp /var/backups/mongo/backup_$(date +\%Y\%m\%d_\%H\%M\%S).tar.gz s3://your-s3-bucket-name/ && rm -rf /var/backups/mongo/*' > /etc/cron.d/mongodb_backup
+              echo '*/30 * * * * root mongodump --uri "mongodb://localhost:27017" --out /var/backups/mongo/$(date +\%Y\%m\%d_\%H\%M\%S) && tar -czf /var/backups/mongo/backup_$(date +\%Y\%m\%d_\%H\%M\%S).tar.gz -C /var/backups/mongo/$(date +\%Y\%m\%d_\%H\%M\%S) . && aws s3 cp /var/backups/mongo/backup_$(date +\%Y\%m\%d_\%H\%M\%S).tar.gz s3://eks-wiz-mongodb-bucket/ && rm -rf /var/backups/mongo/*' > /etc/cron.d/mongodb_backup
               EOF
 }
 
