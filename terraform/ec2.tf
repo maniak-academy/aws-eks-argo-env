@@ -72,10 +72,10 @@ resource "aws_instance" "mongodb_instance" {
               sudo systemctl enable mongod
 
               # MongoDB configuration
-              mongosh admin --eval "db.createUser({user: 'adminUser', pwd: 'MyMongoDBWizPassword', roles: [{role: 'userAdminAnyDatabase', db: 'admin'}, 'readWriteAnyDatabase']})"
+              # mongosh admin --eval "db.createUser({user: 'adminUser', pwd: 'MyMongoDBWizPassword', roles: [{role: 'userAdminAnyDatabase', db: 'admin'}, 'readWriteAnyDatabase']})"
               sleep 10
               sudo sed -i 's/bindIp: 127.0.0.1/bindIp: 0.0.0.0/' /etc/mongod.conf
-              sudo sed -i '/^security:/a \\  authorization: enabled' /etc/mongod.conf
+              # sudo sed -i '/^security:/a \\  authorization: enabled' /etc/mongod.conf
               sudo systemctl restart mongod
               sleep 10
 
