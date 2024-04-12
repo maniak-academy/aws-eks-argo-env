@@ -9,7 +9,7 @@ resource "aws_eks_node_group" "eksnodegroup" {
   scaling_config {
     desired_size = 3
     max_size     = 5
-    min_size     = 2
+    min_size     = 1
   }
 
   ami_type       = "AL2_x86_64" # AL2_x86_64, AL2_x86_64_GPU, AL2_ARM_64, CUSTOM
