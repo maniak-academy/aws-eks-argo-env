@@ -33,12 +33,6 @@ switch to the admin database
 
 use admin
 
-db.createUser({
-  user: "adminUser",
-  pwd: "MyMongoDBWizPassword", // Choose a strong password
-  roles: [{ role: "userAdminAnyDatabase", db: "admin" }, "readWriteAnyDatabase"]
-})
-
 
 db.createUser({
   user: 'admin',
