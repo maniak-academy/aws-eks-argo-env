@@ -41,7 +41,6 @@ resource "aws_iam_role_policy_attachment" "ec2_full_access_attachment" {
 }
 
 
-
 resource "aws_instance" "mongodb_instance" {
   ami                         = "ami-080e1f13689e07408"
   instance_type               = "t2.micro"
@@ -52,40 +51,44 @@ resource "aws_instance" "mongodb_instance" {
 
   iam_instance_profile        = aws_iam_instance_profile.database_instance_profile.name
 
-
   tags = {
     Name = "MongoDBInstance"
   }
 
- user_data = <<-EOF
+  user_data = <<-EOF
               #!/bin/bash
               sudo apt-get update -y
-              sudo apt-get install gnupg curl -y
+              sudo apt-get install -y gnupg curl unzip
+
+              # Install AWS CLI
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              sudo ./aws/install
+
+              # MongoDB installation
               curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
               echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
               sudo apt-get update -y
               sudo apt-get install -y mongodb-org
               sudo systemctl start mongod
               sudo systemctl enable mongod
-              
-              # Create admin user
-              mongosh admin --eval "db.createUser({user: 'adminUser', pwd: 'adminPassword', roles: [{role: 'userAdminAnyDatabase', db: 'admin'}, 'readWriteAnyDatabase']})"
-              
-              # Wait for MongoDB to start
-              sleep 10
 
-              # Edit the MongoDB configuration
+              # MongoDB configuration
+              mongosh admin --eval "db.createUser({user: '${var.mongo_admin_user}', pwd: '${var.mongo_admin_password}', roles: [{role: 'userAdminAnyDatabase', db: 'admin'}, 'readWriteAnyDatabase']})"
+              sleep 10
               sudo sed -i 's/bindIp: 127.0.0.1/bindIp: 0.0.0.0/' /etc/mongod.conf
               sudo sed -i '/^security:/a \\  authorization: enabled' /etc/mongod.conf
-
-              # Restart MongoDB to apply configuration changes
               sudo systemctl restart mongod
-              
-              # Wait for MongoDB to start
               sleep 10
 
+              # Configure AWS CLI (using instance profile for credentials)
+              aws configure set default.region us-east-1
+
+              # Script for MongoDB backup
+              echo '*/30 * * * * root mongodump --uri "mongodb://localhost:27017" --out /var/backups/mongo/$(date +\%Y\%m\%d_\%H\%M\%S) && tar -czf /var/backups/mongo/backup_$(date +\%Y\%m\%d_\%H\%M\%S).tar.gz -C /var/backups/mongo/$(date +\%Y\%m\%d_\%H\%M\%S) . && aws s3 cp /var/backups/mongo/backup_$(date +\%Y\%m\%d_\%H\%M\%S).tar.gz s3://your-s3-bucket-name/ && rm -rf /var/backups/mongo/*' > /etc/cron.d/mongodb_backup
               EOF
 }
+
 
 
 resource "aws_route53_zone" "internal_zone" {

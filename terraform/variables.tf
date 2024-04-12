@@ -10,6 +10,8 @@ variable "availability_zones_count" {
   type        = number
   default     = 2
 }
+variable "mongo_admin_user" {}
+variable "mongo_admin_password" {}
 
 variable "project" {
   description = "Name to be used on all the resources as identifier. e.g. Project name, Application name"
