@@ -31,14 +31,23 @@ Using mongosh:
 
 switch to the admin database
 
-
+use admin
 
 db.createUser({
   user: "adminUser",
-  pwd: "adminPassword", // Choose a strong password
+  pwd: "MyMongoDBWizPassword", // Choose a strong password
   roles: [{ role: "userAdminAnyDatabase", db: "admin" }, "readWriteAnyDatabase"]
 })
 
+
+db.createUser({
+  user: 'admin',
+  pwd: 'MyMongoDBWizPassword',
+  roles: [
+    { role: 'userAdminAnyDatabase', db: 'admin' },
+    { role: 'readWriteAnyDatabase', db: 'admin' }
+  ]
+})
 
 mongodump --uri "mongodb://adminUser:adminPassword@localhost:27017" --out $backup_path/$date
 
