@@ -57,7 +57,7 @@ resource "aws_instance" "mongodb_instance" {
     Name = "MongoDBInstance"
   }
 
-  user_data = <<-EOF
+ user_data = <<-EOF
               #!/bin/bash
               sudo apt-get update -y
               sudo apt-get install gnupg curl -y
@@ -67,8 +67,26 @@ resource "aws_instance" "mongodb_instance" {
               sudo apt-get install -y mongodb-org
               sudo systemctl start mongod
               sudo systemctl enable mongod
+              
+              # Create admin user
+              mongo admin --eval "db.createUser({user: 'adminUser', pwd: 'adminPassword', roles: [{role: 'userAdminAnyDatabase', db: 'admin'}, 'readWriteAnyDatabase']})"
+              
+              # Wait for MongoDB to start
+              sleep 10
+
+              # Edit the MongoDB configuration
+              sudo sed -i 's/bindIp: 127.0.0.1/bindIp: 0.0.0.0/' /etc/mongod.conf
+              sudo sed -i '/^security:/a \\  authorization: enabled' /etc/mongod.conf
+
+              # Restart MongoDB to apply configuration changes
+              sudo systemctl restart mongod
+              
+              # Wait for MongoDB to start
+              sleep 10
+
               EOF
 }
+
 
 resource "aws_route53_zone" "internal_zone" {
   name = "internal.maniak.academy"
@@ -107,7 +125,8 @@ resource "aws_security_group" "MongoDB_sg" {
     from_port   = 27017
     to_port     = 27017
     protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr] # Allows traffic from any IP address. Narrow this down as necessary for your use case.
+    cidr_blocks = ["0.0.0.0/0"]
+    #cidr_blocks = [var.vpc_cidr] # Allows traffic from any IP address. Narrow this down as necessary for your use case.
   }
   egress {
     description = "All traffic"
