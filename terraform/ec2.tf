@@ -61,9 +61,7 @@ resource "aws_instance" "mongodb_instance" {
               sudo apt-get install -y gnupg curl unzip
 
               # Install AWS CLI
-              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-              unzip awscliv2.zip
-              sudo ./aws/install
+              sudo apt-get install awscli -y
 
               # MongoDB installation
               curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
@@ -74,7 +72,7 @@ resource "aws_instance" "mongodb_instance" {
               sudo systemctl enable mongod
 
               # MongoDB configuration
-              mongosh admin --eval "db.createUser({user: '${var.mongo_admin_user}', pwd: '${var.mongo_admin_password}', roles: [{role: 'userAdminAnyDatabase', db: 'admin'}, 'readWriteAnyDatabase']})"
+              mongosh admin --eval "db.createUser({user: 'adminUser', pwd: 'MyMongoDBWizPassword', roles: [{role: 'userAdminAnyDatabase', db: 'admin'}, 'readWriteAnyDatabase']})"
               sleep 10
               sudo sed -i 's/bindIp: 127.0.0.1/bindIp: 0.0.0.0/' /etc/mongod.conf
               sudo sed -i '/^security:/a \\  authorization: enabled' /etc/mongod.conf
