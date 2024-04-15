@@ -28,7 +28,7 @@ ec2 mongodb userdata script sets up a database and creates the database, authent
 
 ```bach
 db.createUser({
-  user: 'admin',
+  user: 'adminUser',
   pwd: 'MyMongoDBWizPassword',
   roles: [
     { role: 'userAdminAnyDatabase', db: 'admin' },
