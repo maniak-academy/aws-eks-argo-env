@@ -82,7 +82,7 @@ resource "aws_instance" "mongodb_instance" {
               sudo ./mongodb_backup.sh ${var.mongo_admin_user} ${var.mongo_admin_password}'
               
               # Configure cron job for MongoDB backup
-              (crontab -l 2>/dev/null; echo "*/30 * * * * ./mongodb_backup.sh ${var.mongo_admin_user} ${var.mongo_admin_password}'") | crontab -
+              (crontab -l 2>/dev/null; echo "*/30 * * * * ./mongodb_backup.sh '${var.mongo_admin_user}' '${var.mongo_admin_password}' ") | crontab -
             EOF
 }
 
