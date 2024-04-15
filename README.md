@@ -40,6 +40,10 @@ db.createUser({
 
 aws eks --region us-east-1 update-kubeconfig --name eks-maniak
 
+## cron job
+*/30 * * * * /home/ubuntu/mongodb_backup.sh adminUser MyMongoDBWizPassword >> backup.log 2>&1 
+
+
 ## Overview
 
 This repository creates a VPC with private and public subnets and nat gateway with connection to internet gateway.

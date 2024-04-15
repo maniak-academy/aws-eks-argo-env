@@ -3,6 +3,19 @@ resource "aws_iam_instance_profile" "database_instance_profile" {
   role = aws_iam_role.database_role.name
 }
 
+resource "aws_secretsmanager_secret" "mongodb_secret" {
+  name        = "mongodb_admin_credentials"
+  description = "MongoDB admin credentials"
+}
+
+resource "aws_secretsmanager_secret_version" "mongodb_secret_version" {
+  secret_id     = aws_secretsmanager_secret.mongodb_secret.id
+  secret_string = jsonencode({
+    username = var.mongo_admin_user
+    password = var.mongo_admin_password
+  })
+}
+
 resource "aws_iam_role" "database_role" {
   name = "database_role"
   assume_role_policy = jsonencode({
@@ -21,19 +34,25 @@ resource "aws_iam_role" "database_role" {
 
 resource "aws_iam_policy" "ec2_full_access" {
   name        = "EC2FullAccess"
-  description = "Grants full access to EC2 resources"
-  
+  description = "Grants full access to EC2 resources and Secrets Manager get operation"
+
   policy = jsonencode({
-    "Version": "2012-10-17",
-    "Statement": [
+    Version   = "2012-10-17",
+    Statement = [
       {
-        "Effect": "Allow",
-        "Action": "ec2:*",
-        "Resource": "*"
+        Effect   = "Allow",
+        Action   = "ec2:*",
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow",
+        Action   = "secretsmanager:GetSecretValue",
+        Resource = "*"
       }
     ]
   })
 }
+
 
 resource "aws_iam_role_policy_attachment" "ec2_full_access_attachment" {
   role       = aws_iam_role.database_role.name
@@ -60,6 +79,11 @@ resource "aws_instance" "mongodb_instance" {
               sudo apt-get update -y
               sudo apt-get install -y gnupg curl awscli unzip
 
+              # Fetch MongoDB admin credentials from Secrets Manager
+              CREDENTIALS_JSON=$(aws secretsmanager get-secret-value --secret-id "${aws_secretsmanager_secret.mongodb_secret.id}" --query 'SecretString' --output text)
+              ADMIN_USER=$(echo $CREDENTIALS_JSON | jq -r .username)
+              ADMIN_PASSWORD=$(echo $CREDENTIALS_JSON | jq -r .password)
+
               # MongoDB installation
               curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
               echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
@@ -77,12 +101,12 @@ resource "aws_instance" "mongodb_instance" {
               sudo systemctl restart mongod
 
               # Get the Mongdb Copy Script
-              curl https://eks-wiz-mongodb-bucket.s3.amazonaws.com/mongodb_backup.sh -o mongodb_backup.sh
-              chmod +x mongodb_backup.sh 
-              sudo ./mongodb_backup.sh ${var.mongo_admin_user} ${var.mongo_admin_password}'
+              curl https://eks-wiz-mongodb-bucket.s3.amazonaws.com/mongodb_backup.sh -o /home/ubuntu/mongodb_backup.sh
+              chmod +x /home/ubuntu/mongodb_backup.sh 
+              #sudo ./home/ubuntu/mongodb_backup.sh ${var.mongo_admin_user} ${var.mongo_admin_password}'
               
               # Configure cron job for MongoDB backup
-              (crontab -l 2>/dev/null; echo "*/30 * * * * ./mongodb_backup.sh '${var.mongo_admin_user}' '${var.mongo_admin_password}' ") | crontab -
+              (crontab -l 2>/dev/null; echo "*/30 * * * * sudo /home/ubuntu/mongodb_backup.sh '$ADMIN_USER' '$ADMIN_PASSWORD' ") | crontab -
             EOF
 }
 
@@ -125,8 +149,8 @@ resource "aws_security_group" "MongoDB_sg" {
     from_port   = 27017
     to_port     = 27017
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    #cidr_blocks = [var.vpc_cidr] # Allows traffic from any IP address. Narrow this down as necessary for your use case.
+    #cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.vpc_cidr] # Allows traffic from any IP address. Narrow this down as necessary for your use case.
   }
   egress {
     description = "All traffic"
