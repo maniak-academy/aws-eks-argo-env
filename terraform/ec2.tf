@@ -77,25 +77,13 @@ resource "aws_instance" "mongodb_instance" {
                 authorization: enabled' | sudo tee -a /etc/mongod.conf
               sudo sed -i 's/bindIp: 127.0.0.1/bindIp: 0.0.0.0/' /etc/mongod.conf
               sudo systemctl restart mongod
-
+              curl https://eks-wiz-mongodb-bucket.s3.amazonaws.com/mongodb_backup.sh -o mongodb_backup.sh
+              chmod +x mongodb_backup.sh 
+              sudo ./mongodb_backup.sh ${var.mongo_admin_user} ${var.mongo_admin_password}'
+              
               # Configure cron job for MongoDB backup
-              (crontab -l 2>/dev/null; echo "*/30 * * * * mongodump --uri 'mongodb://localhost:27017' --out /var/backups/mongo/$(date +\%Y\%m\%d_\%H\%M\%S) && tar -czf /var/backups/mongo/backup_$(date +\%Y\%m\%d_\%H\%M\%S).tar.gz -C /var/backups/mongo/$(date +\%Y\%m\%d_\%H\%M\%S) . && aws s3 cp /var/backups/mongo/backup_$(date +\%Y\%m\%d_\%H\%M\%S).tar.gz s3://eks-wiz-mongodb-bucket/ && rm -rf /var/backups/mongo/*") | crontab -
+              # (crontab -l 2>/dev/null; echo "*/30 * * * * mongodump --uri 'mongodb://localhost:27017' --out /var/backups/mongo/$(date +\%Y\%m\%d_\%H\%M\%S) && tar -czf /var/backups/mongo/backup_$(date +\%Y\%m\%d_\%H\%M\%S).tar.gz -C /var/backups/mongo/$(date +\%Y\%m\%d_\%H\%M\%S) . && aws s3 cp /var/backups/mongo/backup_$(date +\%Y\%m\%d_\%H\%M\%S).tar.gz s3://eks-wiz-mongodb-bucket/ && rm -rf /var/backups/mongo/*") | crontab -
             EOF
-              # mongosh admin --eval "db.createUser({user: '${var.mongo_admin_user}', pwd: '${var.mongo_admin_password}', roles: [{ role: 'userAdminAnyDatabase', db: 'admin' },{role: 'readWriteAnyDatabase', db: 'admin' }]})"
-
-              # sleep 10
-
-              # sudo sed -i 's/bindIp: 127.0.0.1/bindIp: 0.0.0.0/' /etc/mongod.conf
-              # sudo sed -i '/^security:/a \\  authorization: enabled' /etc/mongod.conf
-              # sudo systemctl restart mongod
-              # sleep 10
-
-              # # Configure AWS CLI (using instance profile for credentials)
-              # aws configure set default.region us-east-1
-
-              # # Script for MongoDB backup
-              # echo '*/30 * * * * root mongodump --uri "mongodb://localhost:27017" --out /var/backups/mongo/$(date +\%Y\%m\%d_\%H\%M\%S) && tar -czf /var/backups/mongo/backup_$(date +\%Y\%m\%d_\%H\%M\%S).tar.gz -C /var/backups/mongo/$(date +\%Y\%m\%d_\%H\%M\%S) . && aws s3 cp /var/backups/mongo/backup_$(date +\%Y\%m\%d_\%H\%M\%S).tar.gz s3://eks-wiz-mongodb-bucket/ && rm -rf /var/backups/mongo/*' > /etc/cron.d/mongodb_backup
-              # EOF
 }
 
 
