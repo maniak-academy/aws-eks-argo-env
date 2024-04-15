@@ -4,7 +4,7 @@ resource "aws_iam_instance_profile" "database_instance_profile" {
 }
 
 resource "aws_secretsmanager_secret" "mongodb_secret" {
-  name        = "mongodb_admin_credentials"
+  name        = "mongodb_admin_creds"
   description = "MongoDB admin credentials"
 }
 
