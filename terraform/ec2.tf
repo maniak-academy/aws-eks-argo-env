@@ -1,6 +1,9 @@
 resource "aws_iam_instance_profile" "database_instance_profile" {
   name = "database_instance_profile"
   role = aws_iam_role.database_role.name
+  tags = merge(
+    var.tags
+  )
 }
 
 resource "aws_secretsmanager_secret" "mongodb_secret" {
@@ -30,6 +33,9 @@ resource "aws_iam_role" "database_role" {
       }
     ]
   })
+  tags = merge(
+    var.tags
+  )
 }
 
 resource "aws_iam_policy" "ec2_full_access" {
@@ -52,12 +58,17 @@ resource "aws_iam_policy" "ec2_full_access" {
       # }
     ]
   })
+  
+  tags = merge(
+    var.tags
+  )
 }
 
 
 resource "aws_iam_role_policy_attachment" "ec2_full_access_attachment" {
   role       = aws_iam_role.database_role.name
   policy_arn = aws_iam_policy.ec2_full_access.arn
+
 }
 
 
