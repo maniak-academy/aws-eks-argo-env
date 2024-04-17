@@ -43,12 +43,13 @@ resource "aws_iam_policy" "ec2_full_access" {
         Effect   = "Allow",
         Action   = "ec2:*",
         Resource = "*"
-      },
-      {
-        Effect   = "Allow",
-        Action   = "secretsmanager:GetSecretValue",
-        Resource = "*"
       }
+      # ,
+      # {
+      #   Effect   = "Allow",
+      #   Action   = "secretsmanager:GetSecretValue",
+      #   Resource = "*"
+      # }
     ]
   })
 }
